@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2014-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 from collections import defaultdict, OrderedDict
-from itertools import izip
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass  # python 3
 import logging
 
 from odoo import _
@@ -233,7 +235,7 @@ class KpiMatrix(object):
         assert len(vals) == col.colspan
         assert len(drilldown_args) == col.colspan
         for val, drilldown_arg, subcol in \
-                izip(vals, drilldown_args, col.iter_subcols()):
+                zip(vals, drilldown_args, col.iter_subcols()):
             if isinstance(val, DataError):
                 val_rendered = val.name
                 val_comment = val.msg
@@ -255,7 +257,7 @@ class KpiMatrix(object):
                 try:
                     style_name = mis_safe_eval(row.kpi.style_expression,
                                                col.locals_dict)
-                except:
+                except Exception:
                     _logger.error("Error evaluating style expression <%s>",
                                   row.kpi.style_expression, exc_info=True)
                 if style_name:
@@ -323,9 +325,7 @@ class KpiMatrix(object):
                                  cell.subcol.subkpi in common_subkpis]
                 comparison_cell_tuple = []
                 for val, base_val, comparison_subcol in \
-                        izip(vals,
-                             base_vals,
-                             comparison_col.iter_subcols()):
+                        zip(vals, base_vals, comparison_col.iter_subcols()):
                     # TODO FIXME average factors
                     delta, delta_r, style_r = \
                         self._style_model.compare_and_render(
@@ -446,7 +446,8 @@ class KpiMatrix(object):
 
         body = []
         for row in self.iter_rows():
-            if row.style_props.hide_empty and row.is_empty():
+            if (row.style_props.hide_empty and row.is_empty()) or \
+                    row.style_props.hide_always:
                 continue
             row_data = {
                 'row_id': row.row_id,

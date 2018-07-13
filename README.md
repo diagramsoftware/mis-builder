@@ -1,13 +1,12 @@
 [![Runbot Status](https://runbot.odoo-community.org/runbot/badge/flat/248/11.0.svg)](https://runbot.odoo-community.org/runbot/repo/github-com-oca-mis-builder-248)
 [![Build Status](https://travis-ci.org/OCA/mis-builder.svg?branch=11.0)](https://travis-ci.org/OCA/mis-builder)
 [![codecov](https://codecov.io/gh/OCA/mis-builder/branch/11.0/graph/badge.svg)](https://codecov.io/gh/OCA/mis-builder)
+[![docs](https://media.readthedocs.org/static/projects/badges/passing.svg)](http://oca-mis-builder.readthedocs.io/en/11.0/)
 
 # MIS Builder
 
 Management Information System reports for Odoo: easily build super fast,
 beautiful, custom reports such as P&L, Balance Sheets and more.
-
-**Odoo 11.0 is not supported yet, nothing to see here for now.**
 
 **This is the 11.0 branch. Please note the development of new features occurs mainly on
 the 10.0 branch, to be forward-ported to 11.0. Please submit pull requests to the 10.0
@@ -35,16 +34,22 @@ It features the following key characteristics:
 - For developers, the accounting balance computation engine is exposed as an easy
   to use API.
 
+Here are some presentations:
+
+- Odoo Experience 2017 ([slides](https://www.slideshare.net/acsone/budget-control-with-misbuilder-3-2017), [video](https://youtu.be/0PpxGAf2l-0))
+- Odoo Experience 2016 ([slides](https://www.slideshare.net/acsone/misbuilder-2016))
+- Odoo Experience 2015 ([slides](https://www.slideshare.net/acsone/misbuilder))
+
 
 [//]: # (addons)
 
-Unported addons
----------------
+Available addons
+----------------
 addon | version | summary
 --- | --- | ---
-[mis_builder](mis_builder/) | 10.0.3.0.2 (unported) | Build 'Management Information System' Reports and Dashboards
-[mis_builder_budget](mis_builder_budget/) | 10.0.1.1.1 (unported) | Create budgets for MIS reports
-[mis_builder_demo](mis_builder_demo/) | 9.0.1.0.0 (unported) | Demo data for the mis_builder module
+[mis_builder](mis_builder/) | 11.0.3.2.2 | Build 'Management Information System' Reports and Dashboards
+[mis_builder_budget](mis_builder_budget/) | 11.0.3.2.1 | Create budgets for MIS reports
+[mis_builder_demo](mis_builder_demo/) | 11.0.3.0.1 | Demo addon for MIS Builder
 
 [//]: # (end addons)
 

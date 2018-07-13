@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2017-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 import odoo.tests.common as common
@@ -99,6 +98,34 @@ class TestPeriodDates(common.TransactionCase):
         # from Monday to Sunday, the week after 2016-12-30
         self.assertEqual(self.period.date_from, '2017-01-02')
         self.assertEqual(self.period.date_to, '2017-01-15')
+        self.assertTrue(self.period.valid)
+
+    def test_rel_month(self):
+        self.instance.write(dict(
+            comparison_mode=True,
+            date='2017-01-05'
+        ))
+        self.period.write(dict(
+            mode=MODE_REL,
+            type='m',
+            offset='1',
+        ))
+        self.assertEqual(self.period.date_from, '2017-02-01')
+        self.assertEqual(self.period.date_to, '2017-02-28')
+        self.assertTrue(self.period.valid)
+
+    def test_rel_year(self):
+        self.instance.write(dict(
+            comparison_mode=True,
+            date='2017-05-06'
+        ))
+        self.period.write(dict(
+            mode=MODE_REL,
+            type='y',
+            offset='1',
+        ))
+        self.assertEqual(self.period.date_from, '2018-01-01')
+        self.assertEqual(self.period.date_to, '2018-12-31')
         self.assertTrue(self.period.valid)
 
     def test_rel_date_range(self):

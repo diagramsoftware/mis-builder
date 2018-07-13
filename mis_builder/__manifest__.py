@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-# © 2014-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2014-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 {
     'name': 'MIS Builder',
-    'version': '10.0.3.0.2',
+    'version': '11.0.3.2.2',
     'category': 'Reporting',
     'summary': """
         Build 'Management Information System' Reports and Dashboards
     """,
-    'author': 'ACSONE SA/NV,'
+    'author': 'ACSONE SA/NV, '
               'Odoo Community Association (OCA)',
     'website': 'https://github.com/OCA/mis-builder/',
     'depends': [
@@ -31,9 +30,11 @@
         'report/mis_report_instance_xlsx.xml',
     ],
     'qweb': [
-        'static/src/xml/*.xml'
+        'static/src/xml/mis_report_widget.xml',
     ],
-    'installable': False,
+    'installable': True,
     'application': True,
     'license': 'AGPL-3',
+    'development_status': 'Production/Stable',
+    'maintainers': ['sbidoul'],
 }

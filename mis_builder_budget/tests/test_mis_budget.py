@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-# Copyright 2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2017-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
-from openerp.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase
 
-from openerp.addons.mis_builder.tests.common import assert_matrix
+from odoo.addons.mis_builder.tests.common import assert_matrix
 
 from ..models.mis_report_instance_period import SRC_MIS_BUDGET
 
@@ -24,13 +23,16 @@ class TestMisBudget(TransactionCase):
             expression='10',
             budgetable=True,
         ))
+        self.kpi1_index = 1
         self.expr1 = self.kpi1.expression_ids[0]
         self.kpi2 = self.env['mis.report.kpi'].create(dict(
             report_id=self.report.id,
             name='k2',
             description='kpi 2',
             expression='k1 + 1',
+            sequence=0,  # kpi2 before kpi1 to test out of order evaluation
         ))
+        self.kpi2_index = 0
         # budget
         self.budget = self.env['mis.budget'].create(dict(
             name='the budget',
@@ -91,8 +93,8 @@ class TestMisBudget(TransactionCase):
         matrix = self.instance._compute_matrix()
         assert_matrix(matrix, [
             # jan, bud jan, feb (3w), bud feb (3w),
-            [10, 10, 10, 15],  # k1
             [11, 11, 11, 16],  # k2 = k1 + 1
+            [10, 10, 10, 15],  # k1
         ])
 
     def test_drilldown(self):
@@ -123,7 +125,7 @@ class TestMisBudget(TransactionCase):
 
     def test_name_search(self):
         report2 = self.report.copy()
-        report2.kpi_ids[0].name = 'k1_1'
+        report2.kpi_ids[self.kpi1_index].name = 'k1_1'
         budget2 = self.budget.copy()
         budget2.report_id = report2.id
         # search restricted to the context of budget2

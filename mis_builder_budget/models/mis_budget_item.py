@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-# Copyright 2017 ACSONE SA/NV
+# Copyright 2017-2018 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import api, fields, models, _
-from openerp.exceptions import ValidationError
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class MisBudgetItem(models.Model):
@@ -45,6 +44,10 @@ class MisBudgetItem(models.Model):
     analytic_account_id = fields.Many2one(
         comodel_name='account.analytic.account',
         string="Analytic account",
+    )
+    analytic_tag_ids = fields.Many2many(
+        comodel_name='account.analytic.tag',
+        string='Analytic Tags',
     )
 
     @api.onchange('date_range_id')

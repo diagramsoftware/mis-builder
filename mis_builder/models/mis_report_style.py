@@ -1,13 +1,18 @@
-# -*- coding: utf-8 -*-
 # Copyright 2016 Therp BV (<http://therp.nl>)
-# Copyright 2016-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2016-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
+
+import sys
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 from .accounting_none import AccountingNone
 from .data_error import DataError
+
+
+if sys.version_info.major >= 3:
+    unicode = str
 
 
 class PropertyDict(dict):
@@ -31,6 +36,7 @@ PROPS = [
     'dp',
     'divider',
     'hide_empty',
+    'hide_always',
 ]
 
 TYPE_NUM = 'num'
@@ -132,6 +138,8 @@ class MisReportKpiStyle(models.Model):
                                default='1')
     hide_empty_inherit = fields.Boolean(default=True)
     hide_empty = fields.Boolean(default=False)
+    hide_always_inherit = fields.Boolean(default=True)
+    hide_always = fields.Boolean(default=False)
 
     @api.model
     def merge(self, styles):

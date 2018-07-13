@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2016-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 import odoo.tests.common as common
@@ -20,7 +19,8 @@ class TestRendering(common.TransactionCase):
         self.style = self.style_obj.create(dict(
             name='teststyle',
         ))
-        self.lang = self.env['res.lang'].search([('code', '=', 'en_US')])[0]
+        self.lang = self.env['res.lang'].with_context(active_test=False).\
+            search([('code', '=', 'en_US')])[0]
 
     def _render(self, value, type=TYPE_NUM):
         style_props = self.style_obj.merge([self.style])

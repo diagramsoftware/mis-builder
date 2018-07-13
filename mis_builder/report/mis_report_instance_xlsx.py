@@ -1,26 +1,16 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2014-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 from collections import defaultdict
 import logging
 import numbers
 
-from odoo.report import report_sxw
+from odoo import models
 
 from ..models.accounting_none import AccountingNone
 from ..models.data_error import DataError
 
 _logger = logging.getLogger(__name__)
-
-try:
-    from odoo.addons.report_xlsx.report.report_xlsx import ReportXlsx
-except ImportError:
-    _logger.debug("report_xlsx not installed, Excel export non functional")
-
-    class ReportXlsx(object):
-        def __init__(self, *args, **kwargs):
-            pass
 
 
 ROW_HEIGHT = 15  # xlsxwriter units
@@ -29,12 +19,9 @@ MIN_COL_WIDTH = 10  # characters
 MAX_COL_WIDTH = 50  # characters
 
 
-class MisBuilderXlsx(ReportXlsx):
-
-    def __init__(self, name, table, rml=False, parser=False, header=True,
-                 store=False):
-        super(MisBuilderXlsx, self).__init__(
-            name, table, rml, parser, header, store)
+class MisBuilderXlsx(models.AbstractModel):
+    _name = 'report.mis_builder.mis_report_instance_xlsx'
+    _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, objects):
 
@@ -44,7 +31,8 @@ class MisBuilderXlsx(ReportXlsx):
 
         # create worksheet
         report_name = u'{} - {}'.format(
-            objects[0].name, objects[0].company_id.name)
+            objects[0].name, u', '.join(
+                [a.name for a in objects[0].query_company_ids]))
         sheet = workbook.add_worksheet(report_name[:31])
         row_pos = 0
         col_pos = 0
@@ -98,7 +86,8 @@ class MisBuilderXlsx(ReportXlsx):
 
         # rows
         for row in matrix.iter_rows():
-            if row.style_props.hide_empty and row.is_empty():
+            if (row.style_props.hide_empty and row.is_empty()) or \
+                    row.style_props.hide_always:
                 continue
             row_xlsx_style = style_obj.to_xlsx_style(row.style_props)
             row_format = workbook.add_format(row_xlsx_style)
@@ -143,7 +132,3 @@ class MisBuilderXlsx(ReportXlsx):
         min_col_pos = min(col_width.keys())
         max_col_pos = max(col_width.keys())
         sheet.set_column(min_col_pos, max_col_pos, data_col_width * COL_WIDTH)
-
-
-MisBuilderXlsx('report.mis.report.instance.xlsx',
-               'mis.report.instance', parser=report_sxw.rml_parse)

@@ -79,7 +79,10 @@
                     <field name="accumulation_method"/>
                     <field name="style_id"/>
                     <field name="style_expression"/>
-                    <field name="report_id" invisible="1"/>
+                    <field name='id' invisible='1'/>
+                    <field name="report_id"
+                           invisible="1"
+                           attrs="{'required': [('id', '!=', False)]}"/>
                 </group>
                 <notebook>
                     <page string="Expressions">
@@ -111,10 +114,10 @@
                                      <p>Expressions can be any valid python expressions.</p>
                                      <p>
                                          The following special elements are recognized in the expressions to compute accounting data: 
-                                         <code>{bal|crd|deb}{pieu}[account selecor][journal items domain]</code>.
+                                         <code>{bal|crd|deb|pbal|nbal}{pieu}[account selector][journal items domain]</code>.
                                      </p>
                                      <ul>
-                                         <li><b>bal, crd, deb</b>: balance, debit, credit.</li>
+                                         <li><b>bal, crd, deb, pbal, nbal</b>: balance, debit, credit, positive balance, negative balance.</li>
                                          <li><b>p, i, e</b>: respectivelyl variation over the period, initial balance, ending balance</li>
                                          <li>The <b>account selector</b> is a like expression on the account code (eg 70%, etc).</li>
                                          <li>The <b>journal items domain</b> is an Odoo domain filter on journal items.</li>
@@ -140,6 +143,10 @@
                                         <li><b>bale[1%%]</b>: balance of accounts starting with 1 at end of period.</li>
                                         <li><b>crdp[40%]</b>: sum of all credits on accounts starting with 40 during the period.</li>
                                         <li><b>debp[55%][('journal_id.code', '=', 'BNK1')]</b>: sum of all debits on accounts 55 and journal BNK1 during the period.</li>
+                                        <li><b>balp[('user_type_id', '=', ref('account.data_account_type_receivable').id)][]</b>: variation of the balance of all receivable accounts over the period.</li>
+                                        <li><b>balp[][('tax_line_id.tag_ids', '=', ref('l10n_be.tax_tag_56').id)]</b>: balance of move lines related to tax grid 56.</li>
+                                        <li><b>pbale[55%]</b>: sum of all ending balances of accounts starting with 55 whose
+                                          ending balance is positive.</li>
                                     </ul>
                                 </div>
                             </group>

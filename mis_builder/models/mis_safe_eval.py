@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2016-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2016-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 import traceback
@@ -30,6 +29,6 @@ def mis_safe_eval(expr, locals_dict):
     except ZeroDivisionError:
         # pylint: disable=redefined-variable-type
         val = DataError('#DIV/0', traceback.format_exc())
-    except:
+    except Exception:
         val = DataError('#ERR', traceback.format_exc())
     return val

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2017 ACSONE SA/NV (<http://acsone.eu>)
+# Copyright 2014-2018 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 import datetime
@@ -10,6 +9,7 @@ import odoo.tests.common as common
 from odoo.tools.safe_eval import safe_eval
 
 from ..models.aep import AccountingExpressionProcessor as AEP
+from ..models.aep import _is_domain
 from ..models.accounting_none import AccountingNone
 
 
@@ -47,19 +47,19 @@ class TestAEP(common.TransactionCase):
             'name': 'Sale journal',
             'code': 'VEN',
             'type': 'sale'})
-        # create move in december last year
+        # create move in December last year
         self._create_move(
             date=datetime.date(self.prev_year, 12, 1),
             amount=100,
             debit_acc=self.account_ar,
             credit_acc=self.account_in)
-        # create move in january this year
+        # create move in January this year
         self._create_move(
             date=datetime.date(self.curr_year, 1, 1),
             amount=300,
             debit_acc=self.account_ar,
             credit_acc=self.account_in)
-        # create move in february this year
+        # create move in March this year
         self._create_move(
             date=datetime.date(self.curr_year, 3, 1),
             amount=500,
@@ -81,6 +81,21 @@ class TestAEP(common.TransactionCase):
         self.aep.parse_expr("crdp[700I%]")
         self.aep.parse_expr("bali[400%]")
         self.aep.parse_expr("bale[700%]")
+        self.aep.parse_expr(
+            "balp[]"
+            "[('account_id.code', '=', '400AR')]")
+        self.aep.parse_expr(
+            "balp[]"
+            "[('account_id.user_type_id', '=', "
+            "  ref('account.data_account_type_receivable').id)]")
+        self.aep.parse_expr(
+            "balp[('user_type_id', '=', "
+            "      ref('account.data_account_type_receivable').id)]")
+        self.aep.parse_expr(
+            "balp['&', "
+            "     ('user_type_id', '=', "
+            "      ref('account.data_account_type_receivable').id), "
+            "     ('code', '=', '400AR')]")
         self.aep.parse_expr("bal_700IN")  # deprecated
         self.aep.parse_expr("bals[700IN]")  # deprecated
         self.aep.done_parsing()
@@ -133,6 +148,20 @@ class TestAEP(common.TransactionCase):
         self.assertIs(self._eval('bali[700IN]'), AccountingNone)
         # check variation
         self.assertEquals(self._eval('balp[400AR]'), 100)
+        self.assertEquals(self._eval(
+            "balp[][('account_id.code', '=', '400AR')]"), 100)
+        self.assertEquals(self._eval(
+            "balp[]"
+            "[('account_id.user_type_id', '=', "
+            "  ref('account.data_account_type_receivable').id)]"), 100)
+        self.assertEquals(self._eval(
+            "balp[('user_type_id', '=', "
+            "      ref('account.data_account_type_receivable').id)]"), 100)
+        self.assertEquals(self._eval(
+            "balp['&', "
+            "     ('user_type_id', '=', "
+            "      ref('account.data_account_type_receivable').id), "
+            "     ('code', '=', '400AR')]"), 100)
         self.assertEquals(self._eval('balp[700IN]'), -100)
         # check ending balance
         self.assertEquals(self._eval('bale[400AR]'), 100)
@@ -159,12 +188,24 @@ class TestAEP(common.TransactionCase):
         # initial balance is the ending balance fo January
         self.assertEquals(self._eval('bali[400AR]'), 400)
         self.assertEquals(self._eval('bali[700IN]'), -300)
+        self.assertEquals(self._eval('pbali[400AR]'), 400)
+        self.assertEquals(self._eval('nbali[400AR]'), 0)
+        self.assertEquals(self._eval('nbali[700IN]'), -300)
+        self.assertEquals(self._eval('pbali[700IN]'), 0)
         # check variation
         self.assertEquals(self._eval('balp[400AR]'), 500)
         self.assertEquals(self._eval('balp[700IN]'), -500)
+        self.assertEquals(self._eval('nbalp[400AR]'), 0)
+        self.assertEquals(self._eval('pbalp[400AR]'), 500)
+        self.assertEquals(self._eval('nbalp[700IN]'), -500)
+        self.assertEquals(self._eval('pbalp[700IN]'), 0)
         # check ending balance
         self.assertEquals(self._eval('bale[400AR]'), 900)
+        self.assertEquals(self._eval('nbale[400AR]'), 0)
+        self.assertEquals(self._eval('pbale[400AR]'), 900)
         self.assertEquals(self._eval('bale[700IN]'), -800)
+        self.assertEquals(self._eval('nbale[700IN]'), -800)
+        self.assertEquals(self._eval('pbale[700IN]'), 0)
         # check some variant expressions, for coverage
         self.assertEquals(self._eval('crdp[700I%]'), 500)
         self.assertEquals(self._eval('debp[400A%]'), 500)
@@ -183,6 +224,16 @@ class TestAEP(common.TransactionCase):
         variation = self._eval_by_account_id('balp[]')
         self.assertEquals(variation, {
             self.account_ar.id: 500,
+            self.account_in.id: -500,
+        })
+        variation = self._eval_by_account_id('pbalp[]')
+        self.assertEquals(variation, {
+            self.account_ar.id: 500,
+            self.account_in.id: AccountingNone,
+        })
+        variation = self._eval_by_account_id('nbalp[]')
+        self.assertEquals(variation, {
+            self.account_ar.id: AccountingNone,
             self.account_in.id: -500,
         })
         variation = self._eval_by_account_id('balp[700IN]')
@@ -231,6 +282,35 @@ class TestAEP(common.TransactionCase):
             time.strftime('%Y') + '-03-15',
             'posted')
         self.assertEquals(unallocated, (0, 100))
+
+    def test_float_is_zero(self):
+        dp = self.company.currency_id.decimal_places
+        self.assertEqual(dp, 2)
+        # make initial balance at Jan 1st equal to 0.01
+        self._create_move(
+            date=datetime.date(self.prev_year, 12, 1),
+            amount=100.01,
+            debit_acc=self.account_in,
+            credit_acc=self.account_ar)
+        initial = AEP.get_balances_initial(
+            self.company,
+            time.strftime('%Y') + '-01-01',
+            'posted')
+        self.assertEquals(initial, {
+            self.account_ar.id: (100.00, 100.01),
+        })
+        # make initial balance at Jan 1st equal to 0.001
+        self._create_move(
+            date=datetime.date(self.prev_year, 12, 1),
+            amount=0.009,
+            debit_acc=self.account_ar,
+            credit_acc=self.account_in)
+        initial = AEP.get_balances_initial(
+            self.company,
+            time.strftime('%Y') + '-01-01',
+            'posted')
+        # epsilon initial balances is reported as empty
+        self.assertEquals(initial, {})
 
     def test_get_account_ids_for_expr(self):
         expr = 'balp[700IN]'
@@ -281,3 +361,15 @@ class TestAEP(common.TransactionCase):
                 # everything must be before from_date for initial balance
                 ('date', '<', '2017-02-01'),
             ])
+
+    def test_is_domain(self):
+        self.assertTrue(_is_domain("('a', '=' 1)"))
+        self.assertTrue(_is_domain("'&', ('a', '=' 1), ('b', '=', 1)"))
+        self.assertTrue(_is_domain("'|', ('a', '=' 1), ('b', '=', 1)"))
+        self.assertTrue(_is_domain("'!', ('a', '=' 1), ('b', '=', 1)"))
+        self.assertTrue(_is_domain("\"&\", ('a', '=' 1), ('b', '=', 1)"))
+        self.assertTrue(_is_domain("\"|\", ('a', '=' 1), ('b', '=', 1)"))
+        self.assertTrue(_is_domain("\"!\", ('a', '=' 1), ('b', '=', 1)"))
+        self.assertFalse(_is_domain("123%"))
+        self.assertFalse(_is_domain("123%,456"))
+        self.assertFalse(_is_domain(""))
