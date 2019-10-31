@@ -47,15 +47,15 @@ Available addons
 ----------------
 addon | version | summary
 --- | --- | ---
-[mis_builder](mis_builder/) | 11.0.3.2.2 | Build 'Management Information System' Reports and Dashboards
-[mis_builder_budget](mis_builder_budget/) | 11.0.3.2.1 | Create budgets for MIS reports
-[mis_builder_demo](mis_builder_demo/) | 11.0.3.0.1 | Demo addon for MIS Builder
+[mis_builder](mis_builder/) | 11.0.3.5.0 | Build 'Management Information System' Reports and Dashboards
+[mis_builder_budget](mis_builder_budget/) | 11.0.3.4.0 | Create budgets for MIS reports
+[mis_builder_demo](mis_builder_demo/) | 11.0.3.1.0 | Demo addon for MIS Builder
 
 [//]: # (end addons)
 
 Translation Status
 ------------------
-[![Transifex Status](https://www.transifex.com/projects/p/OCA-mis-builder-11-0/chart/image_png)](https://www.transifex.com/projects/p/OCA-mis-builder-11-0)
+[![Translation status](https://translation.odoo-community.org/widgets/mis-builder-11-0/-/multi-auto.svg)](https://translation.odoo-community.org/engage/mis-builder-11-0/?utm_source=widget)
 
 ----
 
